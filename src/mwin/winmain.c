@@ -281,23 +281,27 @@ MwSelect(BOOL canBlock)
 	int poll = (!canBlock || dragwp);		/* just poll if can't block or window move in progress*/
 	if (!poll)
 	{
-		if ((timeout = MwGetNextTimeoutValue()) == (MWTIMEOUT) -1L)	/* get next mwin timer*/
-			timeout = 0;											/* no mwin timers*/
+		timeout = MwGetNextTimeoutValue();	/* get next mwin timer or (MWTIMEOUT) -1L if none */
 #if MW_FEATURE_TIMERS
 		/* get next timer or use passed timeout and convert to timeval struct*/
-		if (!GdGetNextTimeout(&tout, timeout))		/* no VTSWITCH timer?*/
+		if (timeout != 0) {
+			if (timeout == (MWTIMEOUT) -1L)	/* no mwin timers */
+				timeout = 0;			    /* convert to GdGetNextTimeout forever */
+			if (!GdGetNextTimeout(&tout, timeout))		/* no VTSWITCH timer?*/
+				to = NULL;								/* no timers, block*/
+		}
 #else
-		if (timeout)								/* setup mwin poll timer*/
+		if (timeout != (MWTIMEOUT) -1L)		/* setup mwin poll timer*/
 		{
 			/* convert wait timeout to timeval struct*/
 			tout.tv_sec = timeout / 1000;
 			tout.tv_usec = (timeout % 1000) * 1000;
 		}
 		else
-#endif
 		{
 			to = NULL;								/* no timers, block*/
 		}
+#endif
 	}
 
 	/* some drivers can't block in select as backend is poll based (SDL)*/
