@@ -225,7 +225,7 @@
 #define MWPIXEL_FORMAT	MWPF_TRUECOLORARGB
 #endif
 
-#if defined(__AS386_16__) || defined(ELKS)
+#if ELKS
 /* Force 8 bit palettized display for ELKS*/
 #undef MWPIXEL_FORMAT
 #define MWPIXEL_FORMAT	MWPF_PALETTE
